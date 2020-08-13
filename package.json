@@ -1,0 +1,30 @@
+{
+  "name": "seven",
+  "version": "0.0.1",
+  "description": "Discord bot",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint src/",
+    "start": "nodemon src/index.js"
+  },
+  "keywords": [],
+  "author": "ZenGlen",
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Zen-glen/seven-discord.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Zen-glen/seven-discord/issues"
+  },
+  "homepage": "https://github.com/Zen-glen/seven-discord#readme",
+  "dependencies": {
+    "discord.js": "^12.2.0",
+    "dotenv": "^8.2.0"
+  },
+  "devDependencies": {
+    "eslint": "^7.6.0",
+    "nodemon": "^2.0.4"
+  }
+}
