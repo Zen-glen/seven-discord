@@ -3,6 +3,7 @@ require('dotenv').config({path: '../.env'});
 const help = require('./help');
 const ping = require('./ping');
 const flip = require('./flip');
+const roll = require('./roll');
 const quit = require('./quit');
 const eightBall = require('./8ball');
 const source = require('./source');
@@ -10,6 +11,7 @@ const source = require('./source');
 const commands = {
 	'help': help,
 	'ping': ping,
+	'roll': roll,
 	'flip': flip,
 	'quit': quit,
 	'source': source,
