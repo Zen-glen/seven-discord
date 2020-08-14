@@ -1,9 +1,8 @@
 // Imports
 require('dotenv').config();
 const Discord = require('discord.js');
-const commandHandler = require('./commands');
+const commandHandler = require('./command_handler');
 const Validator = require('./validator');
-
 
 const client = new Discord.Client();
 
@@ -15,7 +14,9 @@ const ownerID = process.env.OWNER_ID;
 
 
 client.once('ready', () => {
-	client.channels.cache.get(defaultChannelId).send('Bot ready.');
+	if (process.env.SUPPRESS_LOGIN_ANNOUNCE === 'FALSE') {
+		client.channels.cache.get(defaultChannelId).send('I am ready.');
+	}
 	console.log('bot ready');
 });
 
