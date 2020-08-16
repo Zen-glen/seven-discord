@@ -14,7 +14,6 @@ module.exports = async msg => {
 		const command = getCommand(args);
 
 		if (commands[command]) {
-			console.log(commands[command]);
 			await commands[command].execute(args, msg, process.env, commands);
 		}
 	}
