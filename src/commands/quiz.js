@@ -6,6 +6,7 @@ module.exports = {
 	numOfQuestions: 0,
 	difficulty: '',
 	channel: {},
+	winner: '',
 
 
 	execute: async function (args, msg) {
@@ -13,12 +14,6 @@ module.exports = {
 		this.owner = msg.author.id;
 		this.channel = msg.channel;
 		this.parseArgs(args);
-
-
-
-
-
-
 
 		console.log('Quiz started');
 		if (await this.getSettings() === false) return;
@@ -40,11 +35,14 @@ module.exports = {
 		let results = {};
 		let answers = [];
 		let answered = [];
+		let players = [];
 
+
+		let x = 0;
 		for (let question of response.data.results) {
 			answered = [];
-			this.channel.send('**Question: **' + this.parseFromApi(question.question));
-
+			this.channel.send(`**Question ${x}: **` + this.parseFromApi(question.question));
+			x = x + 1;
 			answers = this.collectAnswers(question);
 			const answerString = this.formatAnswers(answers);
 			if (question.type === 'multiple') {
@@ -56,15 +54,24 @@ module.exports = {
 			try {
 				const collected = await this.channel.awaitMessages(message => {
 					const usersAnswer = message.content.toUpperCase();
+					// add players to the game
+					if (!players.includes(message.author.username) && message.author.username !== 'Seven' && ['a', 'b', 'c', 'd'].includes(message.content)) {
+						players.push(message.author.username);
+						console.log('adding: ' + message.author.username);
+					}
+					// check if answer is correct
 					if ( answers.hasOwnProperty(usersAnswer) &&
 						answers[usersAnswer].correct === true &&
 						!answered.includes(message.author.username)) {
 						return true;
 					}
+					// add the answered array so any further messages ignored
 					else {
-						answered.push(message.author.username);
+						if (['a', 'b', 'c', 'd'].includes(message.content)) {
+							answered.push(message.author.username);
+						}
 					}
-				}, { max: 1, time: 30000});
+				}, { max: 1, time: 20000});
 				let winner = collected.first().author.username;
 				this.channel.send(`**${winner}** was correct with *${question.correct_answer}*`);
 				winner in results ? results[winner] += 1 : results[winner] = 1;
@@ -86,9 +93,75 @@ module.exports = {
 			for (let user in results) {
 				this.channel.send(`${user}: ${results[user]}`);
 			}
-			let winner = Object.keys(results).reduce((a, b) => results[a] > results[b] ? a : b);
-			this.channel.send(`The winner is **${winner}**`);
+			this.winner = Object.keys(results).reduce((a, b) => results[a] > results[b] ? a : b);
+			this.channel.send(`The winner is **${this.winner}**`);
 		}
+
+		let numOfPlayers = players.length;
+
+		if (numOfPlayers <= 1) return;
+
+		// store results
+		console.log('game over');
+		console.log(players);
+
+		for (const user of players) {
+
+			if (!results.hasOwnProperty(user)) {
+				results[user] = 0;
+			}
+			console.log(results);
+
+			console.log('adding user: ' + user);
+
+			//calc points
+			let points = (numOfPlayers * 0.5) * (results[user] * 0.5) *  (this.winner === user ? 2 : 1);
+			console.log('point: ' + points);
+			try {
+				let record = await global.Users.findOne({where: {user: user}});
+
+				if (record) {
+					console.log('I found the user');
+					await global.Users.update({
+						games: record.games + 1,
+						wins: this.winner === user ? record.wins + 1 : record.wins,
+						points: record.points + points,
+					}, {
+						where: {
+							user: user,
+						}
+					});
+				}
+				else {
+					console.log('I did not find the user') ;
+					const newUser = await global.Users.create({
+						user: user,
+						games: 1,
+						wins: this.winner === user ? 1 : 0,
+						points: points,
+					});
+				}
+			}
+			catch(e) {
+				console.log(e);
+			}
+		}
+		const records = await global.Users.findAll( {
+			attributes: ['user', 'games', 'wins', 'points'],
+			order: [
+				['points', 'DESC'],
+			],
+		});
+
+		let text = '';
+		const ranks = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
+		let i = 0;
+		for (const record of records) {
+			text = text + `${ranks[i]}: **${record.user}**. (Games: ${record.games}, Wins: ${record.wins}, Points: ${record.points})\n`;
+			i = i + 1;
+		}
+		this.channel.send('\nLeague Table:\n' + text);
+
 	},
 
 	parseArgs: function (args) {
