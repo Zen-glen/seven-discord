@@ -20,8 +20,11 @@
   },
   "homepage": "https://github.com/Zen-glen/seven-discord#readme",
   "dependencies": {
+    "axios": "^0.19.2",
     "discord.js": "^12.2.0",
-    "dotenv": "^8.2.0"
+    "dotenv": "^8.2.0",
+    "sequelize": "^6.3.4",
+    "sqlite3": "^5.0.0"
   },
   "devDependencies": {
     "eslint": "^7.6.0",
